@@ -48,89 +48,89 @@ You can also find some examples in [integration tests](https://github.com/typese
 ### Create a collection
 
 ```go
-	schema := &api.CollectionSchema{
-		Name: "companies",
-		Fields: []api.Field{
-			{
-				Name: "company_name",
-				Type: "string",
-			},
-			{
-				Name: "num_employees",
-				Type: "int32",
-			},
-			{
-				Name:  "country",
-				Type:  "string",
-				Facet: true,
-			},
+schema := &api.CollectionSchema{
+	Name: "companies",
+	Fields: []api.Field{
+		{
+			Name: "company_name",
+			Type: "string",
 		},
-		DefaultSortingField: "num_employees",
-	}
+		{
+			Name: "num_employees",
+			Type: "int32",
+		},
+		{
+			Name:  "country",
+			Type:  "string",
+			Facet: pointer.True(),
+		},
+	},
+	DefaultSortingField: pointer.String("num_employees"),
+}
 
-	client.Collections().Create(schema)
+client.Collections().Create(schema)
 ```
 
 ### Index a document
 
 ```go
-	document := struct {
-		ID           string `json:"id"`
-		CompanyName  string `json:"company_name"`
-		NumEmployees int    `json:"num_employees"`
-		Country      string `json:"country"`
-	}{
-		ID:           "123",
-		CompanyName:  "Stark Industries",
-		NumEmployees: 5215,
-		Country:      "USA",
-	}
+document := struct {
+	ID           string `json:"id"`
+	CompanyName  string `json:"company_name"`
+	NumEmployees int    `json:"num_employees"`
+	Country      string `json:"country"`
+}{
+	ID:           "123",
+	CompanyName:  "Stark Industries",
+	NumEmployees: 5215,
+	Country:      "USA",
+}
 
-	client.Collection("companies").Documents().Create(document)
+client.Collection("companies").Documents().Create(document)
 ```
 
 ### Upserting a document
 
 ```go
-	document := struct {
-		ID           string `json:"id"`
-		CompanyName  string `json:"company_name"`
-		NumEmployees int    `json:"num_employees"`
-		Country      string `json:"country"`
-	}{
-		ID:           "123",
-		CompanyName:  "Stark Industries",
-		NumEmployees: 5215,
-		Country:      "USA",
-	}
+document := struct {
+	ID           string `json:"id"`
+	CompanyName  string `json:"company_name"`
+	NumEmployees int    `json:"num_employees"`
+	Country      string `json:"country"`
+}{
+	ID:           "123",
+	CompanyName:  "Stark Industries",
+	NumEmployees: 5215,
+	Country:      "USA",
+}
 
-	client.Collection("companies").Documents().Upsert(newDocument)
+client.Collection("companies").Documents().Upsert(document)
 ```
 
 ### Search a collection
 
 ```go
-	searchParameters := &api.SearchCollectionParams{
-		Q:        "stark",
-		QueryBy:  "company_name",
-		FilterBy: pointer.String("num_employees:>100"),
-		SortBy:   &([]string{"num_employees:desc"}),
-	}
+searchParameters := &api.SearchCollectionParams{
+	Q:        "stark",
+	QueryBy:  "company_name",
+	FilterBy: pointer.String("num_employees:>100"),
+	SortBy:   pointer.String("num_employees:desc"),
+}
 
-	client.Collection("companies").Documents().Search(searchParameters)
+client.Collection("companies").Documents().Search(searchParameters)
 ```
 
 for the supporting multiple `QueryBy` params, you can add `,` after each field
 
 ```go
-	searchParameters := &api.SearchCollectionParams{
-		Q:        "stark",
-		QueryBy:  "company_name, country",
-		FilterBy: pointer.String("num_employees:>100"),
-		SortBy:   &([]string{"num_employees:desc"}),
-	}
+searchParameters := &api.SearchCollectionParams{
+	Q:        "stark",
+	QueryBy:  "company_name, country",
+	FilterBy: pointer.String("num_employees:>100"),
+	SortBy:   pointer.String("num_employees:desc"),
+}
 
-	client.Collection("companies").Documents().Search(searchParameters)
+client.Collection("companies").Documents().Search(searchParameters)
 ```
 
 ### Retrieve a document
@@ -142,15 +142,15 @@ client.Collection("companies").Document("123").Retrieve()
 ### Update a document
 
 ```go
-	document := struct {
-		CompanyName  string `json:"company_name"`
-		NumEmployees int    `json:"num_employees"`
-	}{
-		CompanyName:  "Stark Industries",
-		NumEmployees: 5500,
-	}
+document := struct {
+	CompanyName  string `json:"company_name"`
+	NumEmployees int    `json:"num_employees"`
+}{
+	CompanyName:  "Stark Industries",
+	NumEmployees: 5500,
+}
 
-	client.Collection("companies").Document("123").Update(document)
+client.Collection("companies").Document("123").Update(document)
 ```
 
 ### Delete an individual document
@@ -162,7 +162,7 @@ client.Collection("companies").Document("123").Delete()
 ### Delete a bunch of documents
 
 ```go
-filter := &api.DeleteDocumentsParams{FilterBy: "num_employees:>100", BatchSize: 100}
+filter := &api.DeleteDocumentsParams{FilterBy: pointer.String("num_employees:>100"), BatchSize: pointer.Int(100)}
 client.Collection("companies").Documents().Delete(filter)
 ```
 
@@ -185,38 +185,38 @@ The documents to be imported can be either an array of document objects or be fo
 Import an array of documents:
 
 ```go
-	documents := []interface{}{
-		struct {
-			ID           string `json:"id"`
-			CompanyName  string `json:"companyName"`
-			NumEmployees int    `json:"numEmployees"`
-			Country      string `json:"country"`
-		}{
-			ID:           "123",
-			CompanyName:  "Stark Industries",
-			NumEmployees: 5215,
-			Country:      "USA",
-		},
-	}
-	params := &api.ImportDocumentsParams{
-		Action:    "create",
-		BatchSize: 40,
-	}
+documents := []interface{}{
+	struct {
+		ID           string `json:"id"`
+		CompanyName  string `json:"companyName"`
+		NumEmployees int    `json:"numEmployees"`
+		Country      string `json:"country"`
+	}{
+		ID:           "123",
+		CompanyName:  "Stark Industries",
+		NumEmployees: 5215,
+		Country:      "USA",
+	},
+}
+params := &api.ImportDocumentsParams{
+	Action:    "create",
+	BatchSize: 40,
+}
 
-	client.Collection("companies").Documents().Import(documents, params)
+client.Collection("companies").Documents().Import(documents, params)
 ```
 
 Import a JSONL file:
 
 ```go
-	params := &api.ImportDocumentsParams{
-		Action:    "create",
-		BatchSize: 40,
-	}
-	importBody, err := os.Open("documents.jsonl")
-	// defer close, error handling ...
+params := &api.ImportDocumentsParams{
+	Action:    "create",
+	BatchSize: 40,
+}
+importBody, err := os.Open("documents.jsonl")
+// defer close, error handling ...
 
-	client.Collection("companies").Documents().ImportJsonl(importBody, params)
+client.Collection("companies").Documents().ImportJsonl(importBody, params)
 ```
 
 ### List all collections
@@ -234,14 +234,14 @@ client.Collection("companies").Delete()
 ### Create an API Key
 
 ```go
-	keySchema := &api.ApiKeySchema{
-		Description: "Search-only key.",
-		Actions:     []string{"documents:search"},
-		Collections: []string{"companies"},
-		ExpiresAt:   time.Now().AddDate(0, 6, 0).Unix(),
-	}
+keySchema := &api.ApiKeySchema{
+	Description: "Search-only key.",
+	Actions:     []string{"documents:search"},
+	Collections: []string{"companies"},
+	ExpiresAt:   time.Now().AddDate(0, 6, 0).Unix(),
+}
 
-	client.Keys().Create(keySchema)
+client.Keys().Create(keySchema)
 ```
 
 ### Retrieve an API Key
@@ -265,29 +265,29 @@ client.Key(1).Delete()
 ### Create or update an override
 
 ```go
-	override := &api.SearchOverrideSchema{
-		Rule: api.SearchOverrideRule{
-			Query: "apple",
-			Match: "exact",
+override := &api.SearchOverrideSchema{
+	Rule: api.SearchOverrideRule{
+		Query: "apple",
+		Match: "exact",
+	},
+	Includes: []api.SearchOverrideInclude{
+		{
+			Id:       "422",
+			Position: 1,
 		},
-		Includes: []api.SearchOverrideInclude{
-			{
-				Id:       "422",
-				Position: 1,
-			},
-			{
-				Id:       "54",
-				Position: 2,
-			},
+		{
+			Id:       "54",
+			Position: 2,
 		},
-		Excludes: []api.SearchOverrideExclude{
-			{
-				Id: "287",
-			},
+	},
+	Excludes: []api.SearchOverrideExclude{
+		{
+			Id: "287",
 		},
-	}
+	},
+}
 
-	client.Collection("companies").Overrides().Upsert("customize-apple", override)
+client.Collection("companies").Overrides().Upsert("customize-apple", override)
 ```
 
 ### List all overrides
@@ -305,8 +305,8 @@ client.Collection("companies").Override("customize-apple").Delete()
 ### Create or Update an alias
 
 ```go
-	body := &api.CollectionAliasSchema{CollectionName: "companies_june11"}
-	client.Aliases().Upsert("companies", body)
+body := &api.CollectionAliasSchema{CollectionName: "companies_june11"}
+client.Aliases().Upsert("companies", body)
 ```
 
 ### Retrieve an alias
@@ -330,20 +330,20 @@ client.Alias("companies").Delete()
 ### Create or update a multi-way synonym
 
 ```go
-	synonym := &api.SearchSynonymSchema{
-		Synonyms: []string{"blazer", "coat", "jacket"},
-	}
-	client.Collection("products").Synonyms().Upsert("coat-synonyms", synonym)
+synonym := &api.SearchSynonymSchema{
+	Synonyms: []string{"blazer", "coat", "jacket"},
+}
+client.Collection("products").Synonyms().Upsert("coat-synonyms", synonym)
 ```
 
 ### Create or update a one-way synonym
 
 ```go
-	synonym := &api.SearchSynonymSchema{
-		Root:     "blazer",
-		Synonyms: []string{"blazer", "coat", "jacket"},
-	}
-	client.Collection("products").Synonyms().Upsert("coat-synonyms", synonym)
+synonym := &api.SearchSynonymSchema{
+	Root:     "blazer",
+	Synonyms: []string{"blazer", "coat", "jacket"},
+}
+client.Collection("products").Synonyms().Upsert("coat-synonyms", synonym)
 ```
 
 ### Retrieve a synonym
